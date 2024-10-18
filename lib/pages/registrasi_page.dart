@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:responsi1/bloc/login_bloc.dart';
-import 'package:responsi1/helpers/user_info.dart';
-import 'package:responsi1/pages/home_page.dart';
-import 'package:responsi1/pages/registrasi_page.dart';
+import 'package:responsi1/bloc/registrasi_bloc.dart';
 import 'package:responsi1/styles/test_styles.dart';
 import 'package:responsi1/widgets/custom_form_field.dart';
+import 'package:responsi1/widgets/success_dialog.dart';
 import 'package:responsi1/widgets/warning_dialog.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegistrasiPage extends StatefulWidget {
+  const RegistrasiPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegistrasiPage> createState() => _RegistrasiPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegistrasiPageState extends State<RegistrasiPage> {
   bool _isLoading = false;
+  final _namaTextboxController = TextEditingController();
   final _emailTextboxController = TextEditingController();
   final _passwordTextboxController = TextEditingController();
+  final _password2TextboxController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            "Login",
+            "Registrasi",
             style: heading,
           ),
         ),
@@ -33,6 +33,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              CustomFormField(
+                textboxController: _namaTextboxController,
+                labelText: 'Nama',
+              ),
+              SizedBox(
+                height: 10,
+              ),
               CustomFormField(
                 textboxController: _emailTextboxController,
                 labelText: 'Email',
@@ -49,9 +56,17 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 height: 10,
               ),
+              CustomFormField(
+                textboxController: _password2TextboxController,
+                labelText: 'Konfirmasi Password',
+                isObscure: true,
+              ),
+              SizedBox(
+                height: 10,
+              ),
               ElevatedButton(
                   child: Text(
-                    "Login",
+                    "Registrasi",
                     style: heading.copyWith(color: Colors.white),
                   ),
                   style: ButtonStyle(
@@ -63,27 +78,11 @@ class _LoginPageState extends State<LoginPage> {
                     // var validate = _formKey.currentState!.validate();
                     // if (validate) {
                     if (!_isLoading) _submit();
-                    // ;
-                    // _submit();
+                    // }
                   }),
               SizedBox(
                 height: 10,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Belum punya akun?"),
-                  TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RegistrasiPage(),
-                            ));
-                      },
-                      child: Text("Registrasi"))
-                ],
-              )
             ],
           ),
         ));
@@ -93,29 +92,26 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
-    LoginBloc.login(
+    RegistrasiBloc.registrasi(
+            nama: _namaTextboxController.text,
             email: _emailTextboxController.text,
             password: _passwordTextboxController.text)
-        .then((value) async {
-      if (value.code == 200) {
-        await UserInfo().setToken(value.token!);
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const HomePage()));
-      } else {
-        showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) => const WarningDialog(
-                  description: "Login gagal, silahkan coba lagi",
-                ));
-      }
+        .then((value) {
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => SuccessDialog(
+                description: "Registrasi berhasil, silahkan login",
+                okClick: () {
+                  Navigator.pop(context);
+                },
+              ));
     }, onError: (error) {
-      print(error);
       showDialog(
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) => const WarningDialog(
-                description: "Login gagal, silahkan coba lagi",
+                description: "Registrasi gagal, silahkan coba lagi",
               ));
     });
     setState(() {
